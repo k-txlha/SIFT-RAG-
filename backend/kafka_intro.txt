@@ -1,0 +1,10 @@
+Apache Kafka is a distributed event streaming platform.
+It allows services to communicate asynchronously using topics.
+
+A producer publishes messages to a topic.
+Kafka brokers store and distribute those messages.
+Consumers read messages from topics when they are ready.
+
+Consumer groups allow multiple consumers to share the work.
+Kafka can retain messages for a configured period.
+This allows consumers to process messages at their own pace.
