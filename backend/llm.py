@@ -1,7 +1,14 @@
+
+import os
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "qwen3:4b-instruct"
+OLLAMA_URL = os.getenv(
+    "OLLAMA_URL",
+    "http://localhost:11434"
+).rstrip("/") + "/api/generate"
+
+MODEL_NAME = os.getenv("MODEL_NAME", "qwen3:4b-instruct")
+
 
 def generate_response(prompt: str) -> str:
     response = requests.post(
@@ -9,7 +16,7 @@ def generate_response(prompt: str) -> str:
         json={
             "model": MODEL_NAME,
             "prompt": prompt,
-            "stream": False
+            "stream": False,
         },
         timeout=120,
     )
