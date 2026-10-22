@@ -48,7 +48,7 @@ app.add_middleware(
 )
 
 SESSION_COOKIE = "rag_session"
-COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "true").lower() == "true"
 MAX_FILE_SIZE = 2 * 1024 * 1024  # 2 MB limit
 UPLOADS_DIR = Path(__file__).parent / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
@@ -94,7 +94,7 @@ def get_session_id(
         max_age=24 * 60 * 60,
         httponly=True,
         secure=COOKIE_SECURE,
-        samesite="lax",
+        samesite="none" if COOKIE_SECURE else "lax",
         path="/",
     )
     return session_id
