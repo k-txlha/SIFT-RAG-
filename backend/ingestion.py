@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
-from sentence_transformers import SentenceTransformer
+from jina_embedding import embed_documents
 from chunking import chunk_text
 from parsers import parse_document
 from vector_store import VectorDB
@@ -11,12 +11,10 @@ class DocumentIngester:
     def __init__(
         self,
         vector_db: VectorDB,
-        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         chunk_size: int = 150,
         overlap: int = 30,
     ):
         self.vector_db = vector_db
-        self.model = SentenceTransformer(model_name)
         self.chunk_size = chunk_size
         self.overlap = overlap
 
@@ -46,7 +44,7 @@ class DocumentIngester:
             return 0
 
         chunk_texts = [record["text"] for record in records]
-        embeddings = self.model.encode(chunk_texts)
+        embeddings = embed_documents(chunk_texts)
 
         self.vector_db.add_data(
             doc_records=records,

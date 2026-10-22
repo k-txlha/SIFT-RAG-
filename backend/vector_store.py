@@ -62,7 +62,7 @@ class VectorDB:
             self.collection.upsert(
                 ids=ids,
                 documents=[doc["text"] for doc in doc_records],
-                embeddings=embeddings.tolist(),
+                embeddings=embeddings,
                 metadatas=metadatas,
             )
 
@@ -90,7 +90,7 @@ class VectorDB:
 
     def search(
         self,
-        query_embedding: np.ndarray,
+        query_embedding: list[float] | np.ndarray,
         top_k: int = 3,
         document_ids: list[str] | None = None,
     ):
@@ -102,7 +102,7 @@ class VectorDB:
                 where_filter = {"document_id": {"$in": document_ids}}
 
         return self.collection.query(
-            query_embeddings=[query_embedding.tolist()],
+            query_embeddings=[np.asarray(query_embedding).tolist()],
             n_results=top_k,
             where=where_filter,
             include=["documents", "metadatas", "distances"],

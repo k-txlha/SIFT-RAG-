@@ -1,10 +1,10 @@
-from ingestion import DocumentIngester
-from vector_store import VectorDB
+from backend.ingestion import DocumentIngester
+from backend.vector_store import VectorDB
 
 db = VectorDB()
 ingester = DocumentIngester(db)
 
-file_path = "kafka_intro.txt"
+file_path = "./iso27001.pdf"
 
 ingested = ingester.ingest_file(file_path)
 

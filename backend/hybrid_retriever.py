@@ -6,8 +6,7 @@ from typing import Any, Optional
 import numpy as np
 from nltk.stem import PorterStemmer
 from rank_bm25 import BM25Okapi
-from sentence_transformers import SentenceTransformer
-
+from jina_embedding import embed_query
 from vector_store import VectorDB
 
 
@@ -18,7 +17,6 @@ class HybridRetriever:
         self,
         vector_db: VectorDB,
         *,
-        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         rrf_k: int = 60,
     ) -> None:
         if vector_db.count() == 0:
@@ -29,7 +27,6 @@ class HybridRetriever:
         self.vector_db = vector_db
         self.rrf_k = rrf_k
         self.stemmer = PorterStemmer()
-        self.embedding_model = SentenceTransformer(model_name)
 
         self._load_records()
 
@@ -100,7 +97,7 @@ class HybridRetriever:
             return {"semantic": [], "bm25": [], "hybrid": []}
 
         # 1. Semantic search with ChromaDB
-        query_embedding = self.embedding_model.encode(question)
+        query_embedding = embed_query(question) 
         semantic_results = self.vector_db.search(
             query_embedding,
             top_k=min(top_k, len(eligible_records)),
