@@ -92,10 +92,10 @@ export default function App() {
       await loadDocuments(true);
       try {
         const items = await loadConversations();
-          const rememberedId = initialConversationId.current;
+        const rememberedId = initialConversationId.current;
         const initial = items.find((item) => item.conversation_id === rememberedId) || items[0];
         if (initial) await openConversation(initial.conversation_id);
-          else setActiveConversationId(null);
+        else setActiveConversationId(null);
       } catch (err) {
         setChatError(`Failed to load conversation history: ${err.message}`);
       }
@@ -271,33 +271,33 @@ export default function App() {
 
       setMessages((prev) => [
         ...prev,
-      { role: "user", text: query, sources: [] },
-      { role: "assistant", text: response.answer, sources: response.sources || [], timings_ms: response.timings_ms },
-    ]);
-    await loadConversations();
-    return true;
+        { role: "user", text: query, sources: [] },
+        { role: "assistant", text: response.answer, sources: response.sources || [], timings_ms: response.timings_ms },
+      ]);
+      await loadConversations();
+      return true;
     } catch (err) {
-    setChatError(err.message || "Failed to generate an answer. Your existing conversation was not changed.");
-    return false;
+      setChatError(err.message || "Failed to generate an answer. Your existing conversation was not changed.");
+      return false;
     } finally {
-    setAsking(false);
+      setAsking(false);
     }
   }
 
   async function handleNewConversation() {
     try {
-    setChatError("");
-    const conversation = await apiFetch("/conversations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
-    setConversations((prev) => [conversation, ...prev]);
-    setActiveConversationId(conversation.conversation_id);
-    setMessages([]);
-    setActiveTab("conversations");
+      setChatError("");
+      const conversation = await apiFetch("/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setConversations((prev) => [conversation, ...prev]);
+      setActiveConversationId(conversation.conversation_id);
+      setMessages([]);
+      setActiveTab("conversations");
     } catch (err) {
-    setChatError(`Could not create a new conversation: ${err.message}`);
+      setChatError(`Could not create a new conversation: ${err.message}`);
     }
   }
 
@@ -305,37 +305,37 @@ export default function App() {
     const title = window.prompt("Rename conversation", conversation.title);
     if (title === null || !title.trim()) return;
     try {
-    const updated = await apiFetch(`/conversations/${conversation.conversation_id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: title.trim() }),
-    });
-    setConversations((prev) =>
-      prev.map((item) => item.conversation_id === updated.conversation_id ? updated : item)
-    );
+      const updated = await apiFetch(`/conversations/${conversation.conversation_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.trim() }),
+      });
+      setConversations((prev) =>
+        prev.map((item) => item.conversation_id === updated.conversation_id ? updated : item)
+      );
     } catch (err) {
-    setChatError(`Could not rename conversation: ${err.message}`);
+      setChatError(`Could not rename conversation: ${err.message}`);
     }
   }
 
   async function handleDeleteConversation(conversation) {
     if (!window.confirm(`Delete "${conversation.title}" and its saved messages?`)) return;
     try {
-    await apiFetch(`/conversations/${conversation.conversation_id}`, { method: "DELETE" });
-    const remaining = conversations.filter(
-      (item) => item.conversation_id !== conversation.conversation_id
-    );
-    setConversations(remaining);
-    if (activeConversationId === conversation.conversation_id) {
-      if (remaining.length) {
-        await openConversation(remaining[0].conversation_id);
-      } else {
-        setActiveConversationId(null);
-        setMessages([]);
+      await apiFetch(`/conversations/${conversation.conversation_id}`, { method: "DELETE" });
+      const remaining = conversations.filter(
+        (item) => item.conversation_id !== conversation.conversation_id
+      );
+      setConversations(remaining);
+      if (activeConversationId === conversation.conversation_id) {
+        if (remaining.length) {
+          await openConversation(remaining[0].conversation_id);
+        } else {
+          setActiveConversationId(null);
+          setMessages([]);
+        }
       }
-    }
     } catch (err) {
-    setChatError(`Could not delete conversation: ${err.message}`);
+      setChatError(`Could not delete conversation: ${err.message}`);
     }
   }
 
@@ -348,31 +348,31 @@ export default function App() {
     setChatError("");
     setSummarizing(true);
     try {
-    let conversationId = activeConversationId;
-    if (!conversationId) {
-      const created = await apiFetch("/conversations", {
+      let conversationId = activeConversationId;
+      if (!conversationId) {
+        const created = await apiFetch("/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        conversationId = created.conversation_id;
+        setActiveConversationId(conversationId);
+      }
+      const response = await apiFetch(`/documents/${documentId}/summary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ conversation_id: conversationId }),
       });
-      conversationId = created.conversation_id;
-      setActiveConversationId(conversationId);
-    }
-    const response = await apiFetch(`/documents/${documentId}/summary`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversation_id: conversationId }),
-    });
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", text: `Summarize ${doc.filename}`, sources: [] },
-      { role: "assistant", text: response.answer, sources: response.sources || [] },
-    ]);
-    await loadConversations();
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", text: `Summarize ${doc.filename}`, sources: [] },
+        { role: "assistant", text: response.answer, sources: response.sources || [] },
+      ]);
+      await loadConversations();
     } catch (err) {
-    setChatError(`Document summary failed: ${err.message}`);
+      setChatError(`Document summary failed: ${err.message}`);
     } finally {
-    setSummarizing(false);
+      setSummarizing(false);
     }
   }
 
@@ -403,7 +403,7 @@ export default function App() {
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          
+          </svg>
         </button>
       </header>
 
